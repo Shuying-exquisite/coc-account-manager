@@ -1,0 +1,45 @@
+# 数据库（含真实账号数据，绝不提交）
+*.db
+*.db.bak
+*.sqlite
+*.sqlite3
+
+# 编译产物
+__pycache__/
+*.py[cod]
+*.pyc
+
+# 打包输出
+dist/
+dist_rebuild_*/
+build/
+*.spec.bak
+
+# 密钥 / 环境变量 / 凭证
+.env
+*.secret
+*secret*.txt
+.ssh/
+*_rsa
+
+# 备份与旧文件
+*.bak
+*.bak_*
+*.old_*
+*.old
+
+# 日志
+*.log
+nohup.out
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# 临时文件
+*.tmp
+temp/
+tmp/

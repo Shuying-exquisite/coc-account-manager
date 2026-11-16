@@ -1,0 +1,2118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部落冲突账户数据管理系统</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #1e2a4a;
+            --bg-hover: #233356;
+            --text-primary: #e8e8e8;
+            --text-secondary: #a0a0b8;
+            --text-muted: #6c6c8a;
+            --accent: #ffd700;
+            --accent-dark: #c9a700;
+            --accent-glow: rgba(255, 215, 0, 0.15);
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --info: #3498db;
+            --warning: #f39c12;
+            --border: #2a3a5c;
+            --border-light: #3a4a6c;
+            --radius: 10px;
+            --th-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* 顶部导航 */
+        .navbar {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            border-bottom: 2px solid var(--accent);
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .navbar-brand .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .navbar-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover {
+            background: var(--border-light);
+            border-color: var(--accent);
+        }
+
+        .nav-btn.primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-btn.primary:hover {
+            background: var(--accent-dark);
+        }
+
+        .nav-btn.danger:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: white;
+        }
+
+        /* 账号主表分类标签：对应 Excel 的 4 个主表 sheet */
+        .category-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .category-tabs .toolbar-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-right: 6px;
+        }
+
+        .category-tabs .nav-btn {
+            padding: 7px 14px;
+            font-size: 13px;
+        }
+
+        /* 主内容区 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* 仪表盘 */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: var(--th-shadow);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .stat-info h3 {
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-info p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* 图表区 */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .chart-card h3 {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar-label {
+            width: 80px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .bar-track {
+            flex: 1;
+            height: 24px;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--bg-primary);
+        }
+
+        /* 筛选栏 */
+        .toolbar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .toolbar input, .toolbar select {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .toolbar input:focus, .toolbar select:focus {
+            border-color: var(--accent);
+        }
+
+        .toolbar input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .toolbar select {
+            min-width: 100px;
+        }
+
+        .toolbar-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* 表格 */
+        .table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg-secondary);
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            color: var(--accent);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-light);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 10px 16px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr {
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-hover);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-qq { background: rgba(52, 152, 219, 0.2); color: #5dade2; border: 1px solid rgba(52, 152, 219, 0.3); }
+        .badge-wx { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
+        .badge-self { background: rgba(255, 215, 0, 0.15); color: var(--accent); border: 1px solid rgba(255, 215, 0, 0.3); }
+        .badge-friend { background: rgba(155, 89, 182, 0.2); color: #bb8fce; border: 1px solid rgba(155, 89, 182, 0.3); }
+
+        .th-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .th-level-0 { background: #555; }
+        .th-level-low { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
+        .th-level-mid { background: linear-gradient(135deg, #2980b9, #3498db); }
+        .th-level-high { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+        .th-level-max { background: linear-gradient(135deg, #d4a017, #ffd700); box-shadow: 0 0 10px rgba(255,215,0,0.4); }
+
+        /* 起号进度可视化 */
+        .raising-progress { min-width: 130px; }
+        .raising-progress-head { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-bottom: 3px; }
+        .raising-progress-head b { color: var(--warning); }
+        .raising-progress-head .done { color: var(--success); }
+        .raising-progress-track { height: 7px; background: var(--bg-primary); border-radius: 4px; overflow: hidden; }
+        .raising-progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #2980b9, #f39c12, #ffd700); transition: width .5s ease; }
+        .raising-progress-fill.full { background: linear-gradient(90deg, #27ae60, #2ecc71); }
+
+        .action-btn {
+            background: none;
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 4px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .action-btn.delete:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        /* 起号列表序号：可编辑输入框 */
+        .seq-input {
+            width: 58px;
+            padding: 4px 6px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent);
+            background: rgba(0, 0, 0, .25);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            outline: none;
+            transition: .15s;
+        }
+        .seq-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+        .seq-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* 起号账号在主表锁定：置灰、不可编辑 */
+        .action-btn.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-style: dashed;
+        }
+        .action-btn.locked:hover {
+            border-color: var(--border-light);
+            color: var(--text-secondary);
+        }
+
+        .empty-row {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        /* 模态框 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 200;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 60px;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 14px;
+            width: 600px;
+            max-width: 95%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            color: var(--accent);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* 自定义确认弹窗 */
+        .confirm-overlay {
+            z-index: 250;
+            align-items: center;
+            padding-top: 0;
+        }
+
+        .confirm-modal {
+            width: 420px;
+            max-width: 90%;
+        }
+
+        .confirm-body {
+            display: block;
+            padding: 28px 24px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            white-space: pre-line;
+        }
+
+        .confirm-footer {
+            justify-content: flex-end;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--bg-card);
+            border: 1px solid var(--accent);
+            color: var(--text-primary);
+            padding: 14px 18px;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            z-index: 300;
+            transform: translateX(450px);
+            transition: transform 0.3s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 420px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+
+        .toast-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 2px;
+        }
+        .toast-close:hover { color: var(--text-primary); }
+
+        /* 日志面板 */
+        .log-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-top: 16px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .log-entry .log-time {
+            color: var(--text-secondary);
+        }
+
+        .log-entry .log-action {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .charts-row { grid-template-columns: 1fr; }
+            .modal-body { grid-template-columns: 1fr; }
+            .dashboard { grid-template-columns: 1fr 1fr; }
+            th, td { padding: 8px 10px; font-size: 12px; }
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-dark); }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <div class="logo">⚔️</div>
+            <span>部落冲突账户数据管理系统</span>
+        </div>
+        <div class="navbar-actions">
+            <button class="nav-btn" onclick="openRaisingModal()">🚀 起号</button>
+            <button class="nav-btn" onclick="openRentalModal()">💰 账号出租</button>
+            <button class="nav-btn" onclick="exportJson()">📤 导出JSON</button>
+            <button class="nav-btn primary" onclick="openAddModal()">➕ 新增账户</button>
+            <a class="nav-btn" id="logoutBtn" href="/logout" style="display:none;text-decoration:none;">🚪 退出登录</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- 仪表盘 -->
+        <div class="dashboard" id="dashboard"></div>
+
+        <!-- 图表 -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <h3>📊 大本营等级分布</h3>
+                <div class="bar-chart" id="thChart"></div>
+            </div>
+            <div class="chart-card">
+                <h3>👤 账号归属分布</h3>
+                <div class="bar-chart" id="ownerChart"></div>
+            </div>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class    </div>
+
+    <!-- 账号主表分类标签：与 Excel 的 4 个主表 sheet 一一对应 -->
+    <div class="category-tabs" id="categoryTabs">
+        <span class="toolbar-label">账号主表分类：</span>
+        <button class="nav-btn primary" data-category="all" onclick="switchCategory('all')">全部账号</button>
+        <button class="nav-btn" data-category="friend_wechat" onclick="switchCategory('friend_wechat')">朋友微信号</button>
+        <button class="nav-btn" data-category="self_qq" onclick="switchCategory('self_qq')">本人QQ号</button>
+        <button class="nav-btn" data-category="self_wechat" onclick="switchCategory('self_wechat')">本人微信号</button>
+        <button class="nav-btn" data-category="friend_qq" onclick="switchCategory('friend_qq')">朋友QQ号</button>
+    </div>
+
+    <!-- 筛选栏 -->
+    <div class="toolbar">
+        <input type="text" id="searchInput" placeholder="搜索账号名称、账号ID、绑定详情..." oninput="loadAccounts()">
+        <span class="toolbar-label">平台:</span>
+            <select id="filterPlatform" onchange="loadAccounts()">
+                <option value="">全部</option>
+                <option value="QQ">QQ</option>
+                <option value="微信">微信</option>
+            </select>
+            <span class="toolbar-label">归属:</span>
+            <select id="filterOwnerType" onchange="loadAccounts()">
+                <option value="">全部</option>
+                <option value="本人">本人</option>
+                <option value="朋友">朋友</option>
+            </select>
+            <span class="toolbar-label">大本营:</span>
+            <select id="filterTH" onchange="loadAccounts()">
+                <option value="">全部</option>
+            </select>
+            <span class="toolbar-label">排序:</span>
+            <select id="sortBy" onchange="loadAccounts()">
+                <option value="">默认</option>
+                <option value="th_desc">大本营等级 ↓（高→低）</option>
+                <option value="th_asc">大本营等级 ↑（低→高）</option>
+                <option value="login_desc">最后登录 ↓（新→旧）</option>
+                <option value="login_asc">最后登录 ↑（旧→新）</option>
+            </select>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>账号序列</th>
+                        <th>归属</th>
+                        <th>平台</th>
+                        <th>账号名称</th>
+                        <th>绑定详情</th>
+                        <th>账号ID</th>
+                        <th>大本营</th>
+                        <th>最后登录</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- 操作日志 -->
+        <div class="chart-card" style="margin-top: 16px;">
+            <h3>📋 操作日志</h3>
+            <div class="log-panel" id="logPanel"></div>
+        </div>
+    </div>
+
+    <!-- 新增/编辑模态框 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">新增账户</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>账号归属类型</label>
+                    <select id="formOwnerType">
+                        <option value="本人">本人</option>
+                        <option value="朋友">朋友</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>平台</label>
+                    <select id="formPlatform">
+                        <option value="QQ">QQ</option>
+                        <option value="微信">微信</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>归属人</label>
+                    <input type="text" id="formOwnerName" placeholder="如: me / 王天蒙">
+                </div>
+                <div class="form-group">
+                    <label>账号名称</label>
+                    <input type="text" id="formAccountName" placeholder="游戏内名称">
+                </div>
+                <div class="form-group">
+                    <label>绑定详情</label>
+                    <input type="text" id="formBindingDetail" placeholder="如: qqsup / 微信again">
+                </div>
+                <div class="form-group">
+                    <label>账号ID</label>
+                    <input type="text" id="formAccountId" placeholder="QQ号或微信号">
+                </div>
+                <div class="form-group">
+                    <label>大本营等级</label>
+                    <input type="number" id="formTHLevel" min="0" max="18" value="0">
+                </div>
+                <div class="form-group">
+                    <label>目标大本营等级</label>
+                    <input type="number" id="formTargetTH" min="0" max="18" placeholder="目标等级">
+                </div>
+                <div class="form-group">
+                    <label>设备编号</label>
+                    <input type="number" id="formDevice" min="1" placeholder="设备编号">
+                </div>
+                <div class="form-group">
+                    <label>最后登录时间</label>
+                    <input type="date" id="formLastLogin">
+                </div>
+                <div class="form-group full">
+                    <label>备注</label>
+                    <textarea id="formNotes" placeholder="备注信息..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="nav-btn" onclick="closeModal()">取消</button>
+                <button class="nav-btn primary" onclick="saveAccount()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 起号子界面模态框 -->
+    <div class="modal-overlay" id="raisingModalOverlay">
+        <div class="modal" style="width: 1100px; max-width: 96%;">
+            <div class="modal-header">
+                <h2>🚀 起号管理</h2>
+                <button class="modal-close" onclick="closeRaisingModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="display: block; padding: 20px 24px;">
+                <div class="toolbar" style="margin-bottom: 16px; padding: 12px;">
+                    <input type="text" id="raisingSearchInput" placeholder="搜索账号名称、账号ID、绑定详情..." oninput="loadRaisingAccounts()">
+                    <span class="toolbar-label">目标等级:</span>
+                    <select id="raisingFilterTarget" onchange="loadRaisingAccounts()">
+                        <option value="">全部</option>
+                    </select>
+                    <button class="nav-btn primary" onclick="openRaisingPicker()" style="margin-left:auto;">➕ 新增起号</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>账号归属</th>
+                                <th>账号名称</th>
+                                <th>绑定详情</th>
+                                <th>账号</th>
+                                <th>起号设备</th>
+                                <th>当前本</th>
+                                <th>起号进度</th>
+                                <th>最后登录</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="raisingTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="nav-btn" onclick="closeRaisingModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 起号编辑模态框 -->
+    <div class="modal-overlay" id="raisingEditModalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="raisingEditTitle">编辑起号数据</h2>
+                <button class="modal-close" onclick="closeRaisingEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="raisingEditId">
+                <div class="form-group">
+                    <label>序号</label>
+                    <input type="number" id="raisingEditSeq" min="0" step="1" placeholder="可留空；不能与其他起号重复">
+                </div>
+                <div class="form-group">
+                    <label>起号设备</label>
+                    <input type="text" id="raisingEditDevice" placeholder="例如：模拟器1" oninput="checkRaisingDeviceDuplicate()">
+                    <div id="raisingDeviceHint" style="font-size:12px;color:var(--warning);margin-top:4px;min-height:14px;"></div>
+                </div>
+                <div class="form-group">
+                    <label>账号归属</label>
+                    <input type="text" id="raisingEditOwnerName">
+                </div>
+                <div class="form-group">
+                    <label>账号名称</label>
+                    <input type="text" id="raisingEditAccountName">
+                </div>
+                <div class="form-group">
+                    <label>绑定详情</label>
+                    <input type="text" id="raisingEditBindingDetail">
+                </div>
+                <div class="form-group">
+                    <label>账号</label>
+                    <input type="text" id="raisingEditAccountId">
+                </div>
+                <div class="form-group">
+                    <label>大本营等级</label>
+                    <input type="number" id="raisingEditTHLevel" min="0" max="18">
+                </div>
+                <div class="form-group">
+                    <label>目标等级（大本营）</label>
+                    <input type="number" id="raisingEditTargetTH" min="0" max="18">
+                </div>
+                <div class="form-group">
+                    <label>最后登录时间</label>
+                    <input type="date" id="raisingEditLastLogin">
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">起号期间保持为空，结束/取消起号时自动填入当天日期</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="nav-btn" onclick="closeRaisingEditModal()">取消</button>
+                <button class="nav-btn primary" onclick="saveRaisingAccount()">保存并同步</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 起号选取（从主表选账号）模态框 -->
+    <div class="modal-overlay" id="raisingAddModalOverlay">
+        <div class="modal" style="width: 1000px; max-width: 96%; max-height: 85vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h2>选择账号设为起号</h2>
+                <button class="modal-close" onclick="closeRaisingPicker()">&times;</button>
+            </div>
+            <div class="modal-body" style="display: block; padding: 20px 24px; overflow-y: auto; flex: 1 1 auto; min-height: 0;">
+                <div class="toolbar" style="margin-bottom: 12px; padding: 12px;">
+                    <input type="text" id="pickerSearchInput" placeholder="搜索账号名称、账号ID、绑定详情..." oninput="loadPickerAccounts()">
+                </div>
+                <!-- 起号设置：固定放在表格上方，避免被长列表挤到看不见 -->
+                <div class="form-row" style="margin-bottom: 12px; display: flex; gap: 16px; padding: 12px 14px; background: var(--bg-secondary); border-radius: 8px; border-left: 3px solid var(--accent); align-items: flex-start;">
+                    <div class="form-group" style="flex: 1; margin: 0;">
+                        <label style="color: var(--accent); font-weight: 700;">起号设备（必填）</label>
+                        <input type="text" id="pickerDeviceNumber" placeholder="例如：模拟器1 / 设备A" oninput="checkPickerDeviceDuplicate()">
+                        <div id="pickerDeviceHint" style="font-size: 12px; color: var(--warning); margin-top: 4px; min-height: 14px;"></div>
+                    </div>
+                    <div class="form-group" style="flex: 1; margin: 0;">
+                        <label>目标等级（可选，0-18）</label>
+                        <input type="number" id="pickerTargetTH" min="0" max="18" placeholder="可留空">
+                    </div>
+                </div>
+                <div class="table-container" style="overflow: visible;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>账号归属</th>
+                                <th>账号名称</th>
+                                <th>绑定详情</th>
+                                <th>账号</th>
+                                <th>大本营等级</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pickerTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="pickerSelectedInfo" style="margin-top: 8px; color: var(--text-secondary); font-size: 13px;">尚未选择账号</div>
+            </div>
+            <div class="modal-footer">
+                <button class="nav-btn" onclick="closeRaisingPicker()">取消</button>
+                <button class="nav-btn primary" onclick="confirmPromoteRaising()">确认为起号</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 账号出租子界面模态框 -->
+    <div class="modal-overlay" id="rentalModalOverlay">
+        <div class="modal" style="width: 1100px; max-width: 96%;">
+            <div class="modal-header">
+                <h2>💰 账号出租管理</h2>
+                <button class="modal-close" onclick="closeRentalModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="display: block; padding: 20px 24px;">
+                <div class="toolbar" style="margin-bottom: 16px; padding: 12px;">
+                    <input type="text" id="rentalSearchInput" placeholder="搜索账号名称、账号、绑定详情..." oninput="loadRentals()">
+                    <span class="toolbar-label">状态:</span>
+                    <select id="rentalFilterStatus" onchange="loadRentals()">
+                        <option value="">全部</option>
+                        <option value="出租中">出租中</option>
+                        <option value="未开始">未开始</option>
+                        <option value="已到期">已到期</option>
+                    </select>
+                    <button class="nav-btn primary" onclick="openRentalEditModal()" style="margin-left:auto;">➕ 新增出租</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>账号归属</th>
+                                <th>账号名称</th>
+                                <th>绑定详情</th>
+                                <th>账号</th>
+                                <th>起租日</th>
+                                <th>租售时长</th>
+                                <th>结束日</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rentalTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="nav-btn" onclick="closeRentalModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 账号出租编辑/新增模态框 -->
+    <div class="modal-overlay" id="rentalEditModalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="rentalEditTitle">新增出租记录</h2>
+                <button class="modal-close" onclick="closeRentalEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="rentalEditId">
+                <div class="form-group full">
+                    <label>关联账号（选择后自动填充）</label>
+                    <select id="rentalAccountSelect" onchange="fillRentalFromAccount()">
+                        <option value="">手动填写</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>账号归属</label>
+                    <input type="text" id="rentalEditOwnerName" placeholder="如: me">
+                </div>
+                <div class="form-group">
+                    <label>账号名称</label>
+                    <input type="text" id="rentalEditAccountName" placeholder="游戏内名称">
+                </div>
+                <div class="form-group">
+                    <label>绑定详情</label>
+                    <input type="text" id="rentalEditBindingDetail" placeholder="如: qqsup">
+                </div>
+                <div class="form-group">
+                    <label>账号</label>
+                    <input type="text" id="rentalEditAccountIdText" placeholder="QQ号或微信号">
+                </div>
+                <div class="form-group">
+                    <label>起租日</label>
+                    <input type="date" id="rentalEditStartDate">
+                </div>
+                <div class="form-group">
+                    <label>租售时长（天）</label>
+                    <input type="number" id="rentalEditDuration" min="1" placeholder="30">
+                </div>
+                <div class="form-group">
+                    <label>结束日</label>
+                    <input type="date" id="rentalEditEndDate">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="nav-btn" onclick="closeRentalEditModal()">取消</button>
+                <button class="nav-btn primary" onclick="saveRental()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义确认弹窗 -->
+    <div class="modal-overlay confirm-overlay" id="confirmOverlay">
+        <div class="modal confirm-modal">
+            <div class="modal-header">
+                <h2>请确认</h2>
+                <button class="modal-close" onclick="resolveConfirm(false)">&times;</button>
+            </div>
+            <div class="modal-body confirm-body" id="confirmMessage">
+                确定要执行此操作吗？
+            </div>
+            <div class="modal-footer confirm-footer">
+                <button class="nav-btn" onclick="resolveConfirm(false)">取消</button>
+                <button class="nav-btn primary" onclick="resolveConfirm(true)">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let editingId = null;
+
+        // 账号主表分类：与 Excel 的 4 个主表 sheet 一一对应
+        // friend_wechat=朋友微信号  self_qq=本人QQ号  self_wechat=本人微信号  friend_qq=朋友QQ号
+        const CATEGORY_MAP = {
+            all: { owner_type: '', platform: '', label: '全部账号' },
+            friend_wechat: { owner_type: '朋友', platform: '微信', label: '朋友微信号' },
+            self_qq: { owner_type: '本人', platform: 'QQ', label: '本人QQ号' },
+            self_wechat: { owner_type: '本人', platform: '微信', label: '本人微信号' },
+            friend_qq: { owner_type: '朋友', platform: 'QQ', label: '朋友QQ号' }
+        };
+        let currentCategory = 'all';
+
+        function switchCategory(cat) {
+            currentCategory = cat;
+            const cfg = CATEGORY_MAP[cat];
+            document.getElementById('filterOwnerType').value = cfg.owner_type;
+            document.getElementById('filterPlatform').value = cfg.platform;
+
+            // 高亮当前标签
+            document.querySelectorAll('#categoryTabs .nav-btn').forEach(btn => {
+                if (btn.dataset.category === cat) {
+                    btn.classList.add('primary');
+                } else {
+                    btn.classList.remove('primary');
+                }
+            });
+
+            loadAccounts();
+        }
+
+        // ==================== 初始化 ====================
+        async function init() {
+            await loadAccountsForRentalSelect();
+            await loadStatistics();
+            await loadAccounts();
+            await loadLogs();
+        }
+
+        // ==================== Toast ====================
+        let toastTimer = null;
+        function showToast(msg, type = 'success', duration = 3000) {
+            const toast = document.getElementById('toast');
+            if (toastTimer) clearTimeout(toastTimer);
+            toast.innerHTML = `<span style="flex:1;word-break:break-word;">${msg}</span><button class="toast-close" onclick="hideToast()" title="关闭">×</button>`;
+            toast.className = `toast ${type} show`;
+            toastTimer = setTimeout(() => hideToast(), duration);
+        }
+        function hideToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('show');
+            if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+        }
+
+        // ==================== 自定义确认弹窗 ====================
+        let confirmResolve = null;
+
+        function showConfirm(message) {
+            return new Promise((resolve) => {
+                confirmResolve = resolve;
+                document.getElementById('confirmMessage').textContent = message;
+                document.getElementById('confirmOverlay').classList.add('active');
+            });
+        }
+
+        function resolveConfirm(result) {
+            if (confirmResolve) {
+                confirmResolve(result);
+                confirmResolve = null;
+            }
+            document.getElementById('confirmOverlay').classList.remove('active');
+        }
+
+        // ==================== 统计 ====================
+        async function loadStatistics() {
+            const res = await fetch('/api/statistics');
+            const stats = await res.json();
+
+            const dashboard = document.getElementById('dashboard');
+            dashboard.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(255,215,0,0.15); color: var(--accent);"><img src="data:image/png;base64,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" style="width:100%;height:100%;object-fit:cover;padding:0;border-radius:12px;vertical-align:middle;display:block;"></div>
+                    <div class="stat-info">
+                        <h3>${stats.total}</h3>
+                        <p>总账号数</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(52,152,219,0.15); color: #5dade2;"><img src="data:image/png;base64,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" style="width:100%;height:100%;object-fit:cover;padding:0;border-radius:12px;vertical-align:middle;display:block;"></div>
+                    <div class="stat-info">
+                        <h3>${stats.by_platform.QQ}</h3>
+                        <p>QQ 平台</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(46,204,113,0.15); color: #2ecc71;"><img src="data:image/png;base64,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" style="width:100%;height:100%;object-fit:cover;padding:0;border-radius:12px;vertical-align:middle;display:block;"></div>
+                    <div class="stat-info">
+                        <h3>${stats.by_platform['微信']}</h3>
+                        <p>微信平台</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(155,89,182,0.15); color: #bb8fce;">⭐</div>
+                    <div class="stat-info">
+                        <h3>${stats.max_th}</h3>
+                        <p>最高大本营等级</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(241,196,15,0.15); color: #f1c40f;">💰</div>
+                    <div class="stat-info">
+                        <h3>${stats.rental_count || 0}</h3>
+                        <p>出租账号数</p>
+                    </div>
+                </div>
+            `;
+
+            // 大本营等级分布图
+            const thChart = document.getElementById('thChart');
+            const thEntries = Object.entries(stats.by_th_level).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+            const maxTHCount = Math.max(...thEntries.map(e => e[1]), 1);
+            thChart.innerHTML = thEntries.map(([level, count]) => {
+                const pct = (count / maxTHCount) * 100;
+                const colors = ['#8e44ad', '#9b59b6', '#2980b9', '#3498db', '#16a085', '#27ae60', '#f39c12', '#e67e22', '#e74c3c', '#c0392b', '#d4a017'];
+                const colorIdx = Math.min(parseInt(level), colors.length - 1);
+                return `
+                    <div class="bar-item">
+                        <div class="bar-label">本营 ${level}</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: ${pct}%; background: ${colors[colorIdx]};">${count}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // 归属人分布图
+            const ownerChart = document.getElementById('ownerChart');
+            const ownerEntries = Object.entries(stats.by_owner).sort((a, b) => b[1] - a[1]);
+            const maxOwnerCount = Math.max(...ownerEntries.map(e => e[1]), 1);
+            const ownerColors = ['#ffd700', '#3498db', '#2ecc71', '#e74c3c', '#9b59b6', '#f39c12', '#1abc9c'];
+            ownerChart.innerHTML = ownerEntries.map(([name, count], i) => {
+                const pct = (count / maxOwnerCount) * 100;
+                const color = ownerColors[i % ownerColors.length];
+                return `
+                    <div class="bar-item">
+                        <div class="bar-label">${name || '未知'}</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: ${pct}%; background: ${color};">${count}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // 更新大本营筛选选项
+            const filterTH = document.getElementById('filterTH');
+            const currentVal = filterTH.value;
+            filterTH.innerHTML = '<option value="">全部</option>' +
+                thEntries.map(([level]) => `<option value="${level}">大本营 ${level}</option>`).join('');
+            filterTH.value = currentVal;
+        }
+
+        // ==================== 账户列表 ====================
+        async function loadAccounts() {
+            const params = new URLSearchParams();
+            const search = document.getElementById('searchInput').value;
+            const platform = document.getElementById('filterPlatform').value;
+            const ownerType = document.getElementById('filterOwnerType').value;
+            const thLevel = document.getElementById('filterTH').value;
+
+            if (search) params.append('search', search);
+            if (platform) params.append('platform', platform);
+            if (ownerType) params.append('owner_type', ownerType);
+            if (thLevel) params.append('th_level', thLevel);
+
+            const res = await fetch('/api/accounts?' + params.toString());
+            let accounts = await res.json();
+
+            // 账号主表展示全部账号（含起号账号），起号账号当作普通账号显示，不在主表做任何特殊标记。
+
+            // 前端排序：大本营等级 / 最后登录时间（空值始终排在末尾）
+            const sortBy = document.getElementById('sortBy').value;
+            if (sortBy) {
+                const dir = sortBy.endsWith('_asc') ? 1 : -1;
+                const byTH = sortBy.startsWith('th');
+                accounts = accounts.slice().sort((a, b) => {
+                    if (byTH) {
+                        return ((a.town_hall_level || 0) - (b.town_hall_level || 0)) * dir;
+                    }
+                    const va = (a.last_login_date && a.last_login_date !== '-') ? a.last_login_date : '';
+                    const vb = (b.last_login_date && b.last_login_date !== '-') ? b.last_login_date : '';
+                    // 空值 = 今天登录过 = 最新：降序排最前、升序排最后
+                    if (!va && !vb) return 0;
+                    if (!va) return (dir === -1 ? -1 : 1);
+                    if (!vb) return (dir === -1 ? 1 : -1);
+                    return (va < vb ? -1 : 1) * dir;
+                });
+            }
+
+            const tbody = document.getElementById('tableBody');
+            if (accounts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-row">暂无数据，点击右上角"新增账户"添加</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = accounts.map((acc, i) => {
+                const thClass = acc.town_hall_level >= 16 ? 'th-level-max' :
+                                acc.town_hall_level >= 12 ? 'th-level-high' :
+                                acc.town_hall_level >= 7 ? 'th-level-mid' :
+                                acc.town_hall_level > 0 ? 'th-level-low' : 'th-level-0';
+                const platformBadge = acc.platform === 'QQ' ? 'badge-qq' : 'badge-wx';
+                const ownerBadge = acc.owner_type === '本人' ? 'badge-self' : 'badge-friend';
+                // 账号序列：统一显示行号
+                const sequence = i + 1;
+                // 起号账号在主表锁定：不可直接编辑/删除，需到「起号管理」操作
+                const locked = (acc.device_number !== null && acc.device_number !== undefined &&
+                                String(acc.device_number).trim() !== '');
+                const actionHtml = locked
+                    ? `<button class="action-btn locked" onclick="showRaisingLockedTip()" title="该账号已加入起号管理（设备 ${acc.device_number}），请在「🚀 起号」中编辑">🔒 编辑</button>
+                       <button class="action-btn delete locked" onclick="showRaisingLockedTip()" title="该账号已加入起号管理，请在「🚀 起号」中操作">🔒 删除</button>`
+                    : `<button class="action-btn" onclick="openEditModal(${acc.id})">编辑</button>
+                       <button class="action-btn delete" onclick="deleteAccount(${acc.id})">删除</button>`;
+                return `
+                    <tr>
+                        <td style="color: var(--text-muted);">${sequence}</td>
+                        <td>
+                            <span class="badge ${ownerBadge}">${acc.owner_type}</span>
+                            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${acc.owner_name || ''}</div>
+                        </td>
+                        <td><span class="badge ${platformBadge}">${acc.platform}</span></td>
+                        <td style="font-weight:600;">${acc.account_name || '-'}</td>
+                        <td style="color:var(--text-secondary);">${acc.binding_detail || '-'}</td>
+                        <td style="font-family:monospace;font-size:12px;">${acc.account_id || '-'}</td>
+                        <td><span class="th-badge ${thClass}">${acc.town_hall_level || 0}</span></td>
+                        <td style="color:var(--text-muted);font-size:12px;">${acc.last_login_date || '-'}</td>
+                        <td>${actionHtml}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function showRaisingLockedTip() {
+            showToast('该账号已加入起号管理，已锁定。请到顶部「🚀 起号」中编辑或结束起号', 'info', 3500);
+        }
+
+        // ==================== 日志 ====================
+        async function loadLogs() {
+            const res = await fetch('/api/logs');
+            const logs = await res.json();
+            const panel = document.getElementById('logPanel');
+            if (logs.length === 0) {
+                panel.innerHTML = '<div class="log-entry" style="text-align:center;">暂无操作记录</div>';
+                return;
+            }
+            panel.innerHTML = logs.map(log => `
+                <div class="log-entry">
+                    <span class="log-time">[${log.created_at}]</span>
+                    <span class="log-action">${log.action}</span>
+                    <span>${log.description || ''}</span>
+                </div>
+            `).join('');
+        }
+
+        // ==================== 模态框 ====================
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = '新增账户';
+            // 根据当前选中的主表分类，自动默认新增账号的归属和平台
+            const cfg = CATEGORY_MAP[currentCategory] || { owner_type: '本人', platform: 'QQ' };
+            document.getElementById('formOwnerType').value = cfg.owner_type || '本人';
+            document.getElementById('formPlatform').value = cfg.platform || 'QQ';
+            document.getElementById('formOwnerName').value = (cfg.owner_type === '朋友') ? '' : 'me';
+            document.getElementById('formAccountName').value = '';
+            document.getElementById('formBindingDetail').value = '';
+            document.getElementById('formAccountId').value = '';
+            document.getElementById('formTHLevel').value = 0;
+            document.getElementById('formTargetTH').value = '';
+            document.getElementById('formDevice').value = '';
+            document.getElementById('formLastLogin').value = '';
+            document.getElementById('formNotes').value = '';
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        async function openEditModal(id) {
+            const res = await fetch(`/api/accounts/${id}`);
+            const acc = await res.json();
+            // 起号账号在账号主表锁定，禁止在此编辑（须到起号管理操作）
+            if (acc.device_number !== null && acc.device_number !== undefined &&
+                String(acc.device_number).trim() !== '') {
+                showRaisingLockedTip();
+                return;
+            }
+            editingId = id;
+            document.getElementById('modalTitle').textContent = '编辑账户';
+            document.getElementById('formOwnerType').value = acc.owner_type || '本人';
+            document.getElementById('formPlatform').value = acc.platform || 'QQ';
+            document.getElementById('formOwnerName').value = acc.owner_name || '';
+            document.getElementById('formAccountName').value = acc.account_name || '';
+            document.getElementById('formBindingDetail').value = acc.binding_detail || '';
+            document.getElementById('formAccountId').value = acc.account_id || '';
+            document.getElementById('formTHLevel').value = acc.town_hall_level || 0;
+            document.getElementById('formTargetTH').value = acc.target_th_level || '';
+            document.getElementById('formDevice').value = acc.device_number || '';
+            document.getElementById('formLastLogin').value = acc.last_login_date || '';
+            document.getElementById('formNotes').value = acc.notes || '';
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            editingId = null;
+        }
+
+        async function saveAccount() {
+            const data = {
+                owner_type: document.getElementById('formOwnerType').value,
+                platform: document.getElementById('formPlatform').value,
+                owner_name: document.getElementById('formOwnerName').value,
+                account_name: document.getElementById('formAccountName').value,
+                binding_detail: document.getElementById('formBindingDetail').value,
+                account_id: document.getElementById('formAccountId').value,
+                town_hall_level: parseInt(document.getElementById('formTHLevel').value) || 0,
+                target_th_level: document.getElementById('formTargetTH').value ? parseInt(document.getElementById('formTargetTH').value) : null,
+                device_number: document.getElementById('formDevice').value ? parseInt(document.getElementById('formDevice').value) : null,
+                last_login_date: document.getElementById('formLastLogin').value || null,
+                notes: document.getElementById('formNotes').value,
+            };
+
+            if (!data.account_name && !data.account_id) {
+                showToast('账号名称和账号ID至少填写一个', 'error');
+                return;
+            }
+
+            const url = editingId ? `/api/accounts/${editingId}` : '/api/accounts';
+            const method = editingId ? 'PUT' : 'POST';
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (res.ok) {
+                showToast(editingId ? '修改成功' : '新增成功');
+                closeModal();
+                await loadStatistics();
+                await loadAccounts();
+                await loadLogs();
+            } else {
+                showToast('操作失败', 'error');
+            }
+        }
+
+        async function deleteAccount(id) {
+            if (!await showConfirm('确定要删除这个账户吗？')) return;
+            const res = await fetch(`/api/accounts/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                showToast('删除成功');
+                await loadStatistics();
+                await loadAccounts();
+                await loadLogs();
+            } else {
+                showToast('删除失败', 'error');
+            }
+        }
+
+        // ==================== 数据操作 ====================
+
+        // 导出为 JSON
+        // - Web 版（服务器）：容器内没有图形界面，不能弹服务端"另存为"，
+        //   改为让浏览器直接下载到本机。
+        // - 桌面版（127.0.0.1:5000）：仍弹系统"另存为"对话框。
+        async function exportJson() {
+            const isDesktop = (location.hostname === '127.0.0.1' || location.hostname === 'localhost')
+                              && location.port === '5000';
+            if (!isDesktop) {
+                try {
+                    showToast('正在生成 JSON…');
+                    const a = document.createElement('a');
+                    a.href = '/api/export/json/download';
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    setTimeout(() => showToast('已开始下载 JSON 文件', 'success', 2500), 700);
+                } catch (e) {
+                    showToast('导出失败: ' + e.message, 'error');
+                }
+                return;
+            }
+            try {
+                showToast('正在打开保存对话框...');
+                const dres = await fetch('/api/export/json/dialog');
+                const d = await dres.json();
+                if (!dres.ok) throw new Error(d.error || '选择保存位置失败');
+                if (d.cancelled) { showToast('已取消导出'); return; }
+
+                showToast('正在生成 JSON...');
+                const res = await fetch('/api/export/json/file', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: d.path })
+                });
+                if (!res.ok) throw new Error('导出失败');
+                const j = await res.json();
+                if (j.error) throw new Error(j.error);
+                showToast('JSON 已导出：' + j.name, 'success', 3000);
+            } catch (e) {
+                showToast('导出失败: ' + e.message, 'error');
+            }
+        }
+
+        // 数据清空入口已移除（2026-11-16 用户要求），后端 /api/clear 也已禁用。
+
+        // ==================== 起号子界面 ====================
+
+        function openRaisingModal() {
+            document.getElementById('raisingModalOverlay').classList.add('active');
+            loadRaisingAccounts();
+        }
+
+        function closeRaisingModal() {
+            document.getElementById('raisingModalOverlay').classList.remove('active');
+        }
+
+        async function loadRaisingAccounts() {
+            const params = new URLSearchParams();
+            const search = document.getElementById('raisingSearchInput').value;
+            const target = document.getElementById('raisingFilterTarget').value;
+            if (search) params.append('search', search);
+            if (target) params.append('target_th_level', target);
+
+            const res = await fetch('/api/raising?' + params.toString());
+            const accounts = await res.json();
+
+            const tbody = document.getElementById('raisingTableBody');
+            if (accounts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="empty-row">暂无起号数据</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = accounts.map((acc, idx) => {
+                const thClass = acc.town_hall_level >= 16 ? 'th-level-max' :
+                                acc.town_hall_level >= 12 ? 'th-level-high' :
+                                acc.town_hall_level >= 7 ? 'th-level-mid' :
+                                acc.town_hall_level > 0 ? 'th-level-low' : 'th-level-0';
+                // 起号进度条：后端已提供 progress_pct / th_gap / remaining
+                let progressHtml = '<span style="color:var(--text-muted);">未设目标</span>';
+                if (acc.target_th_level) {
+                    const pct = (acc.progress_pct !== undefined) ? acc.progress_pct :
+                                Math.min(100, Math.round((acc.town_hall_level || 0) / acc.target_th_level * 100));
+                    const gap = (acc.th_gap !== undefined) ? acc.th_gap :
+                                Math.max(0, acc.target_th_level - (acc.town_hall_level || 0));
+                    const full = pct >= 100;
+                    progressHtml = `
+                        <div class="raising-progress">
+                            <div class="raising-progress-head">
+                                <span>${acc.town_hall_level || 0} → <b>${acc.target_th_level}</b></span>
+                                ${full ? '<span class="done">✓ 已完成</span>' : `<span>还差 ${gap} 本</span>`}
+                            </div>
+                            <div class="raising-progress-track">
+                                <div class="raising-progress-fill ${full ? 'full' : ''}" style="width:${pct}%"></div>
+                            </div>
+                        </div>`;
+                }
+                return `
+                    <tr>
+                        <td><input class="seq-input" type="number" min="0" step="1"
+                                   value="${(acc.raising_seq === null || acc.raising_seq === undefined) ? '' : acc.raising_seq}"
+                                   data-id="${acc.id}"
+                                   data-orig="${(acc.raising_seq === null || acc.raising_seq === undefined) ? '' : acc.raising_seq}"
+                                   placeholder="${idx + 1}"
+                                   title="可自定义序号，但不能与其他起号重复；留空则按设备号排序"
+                                   onchange="updateRaisingSeq(this)"
+                                   onkeydown="if(event.key==='Enter'){this.blur();}"></td>
+                        <td><span class="badge ${acc.owner_type === '本人' ? 'badge-self' : 'badge-friend'}">${acc.owner_type || '-'}</span> <span class="badge ${acc.platform === 'QQ' ? 'badge-qq' : 'badge-wx'}">${acc.platform || '-'}</span><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${acc.owner_name || ''}</div></td>
+                        <td style="font-weight:600;">${acc.account_name || '-'}</td>
+                        <td style="color:var(--text-secondary);">${acc.binding_detail || '-'}</td>
+                        <td style="font-family:monospace;font-size:12px;">${acc.account_id || '-'}</td>
+                        <td style="font-family:monospace;color:var(--accent);font-weight:600;">${acc.device_number || '-'}</td>
+                        <td><span class="th-badge ${thClass}">${acc.town_hall_level || 0}</span></td>
+                        <td>${progressHtml}</td>
+                        <td style="color:var(--text-muted);font-size:12px;">${acc.last_login_date || '-'}</td>
+                        <td>
+                            <button class="action-btn" onclick="openRaisingEditModal(${acc.id})">编辑</button>
+                            <button class="action-btn" onclick="finishRaisingAccount(${acc.id})" title="已练成：把大本营等级更新为目标等级，并移出起号列表">✓ 完成起号</button>
+                            <button class="action-btn delete" onclick="deleteRaisingAccount(${acc.id})" title="放弃：仅移出起号列表，账号与等级都不变">取消起号</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // 更新目标等级筛选选项
+            const uniqueTargets = [...new Set(accounts.map(a => a.target_th_level).filter(Boolean))].sort((a, b) => a - b);
+            const filterTarget = document.getElementById('raisingFilterTarget');
+            const currentVal = filterTarget.value;
+            filterTarget.innerHTML = '<option value="">全部</option>' +
+                uniqueTargets.map(t => `<option value="${t}">目标 ${t}</option>`).join('');
+            filterTarget.value = currentVal;
+        }
+
+        // 起号序号：在列表内直接编辑，保存到后端（不可重复）
+        async function updateRaisingSeq(input) {
+            const id = input.dataset.id;
+            const orig = input.dataset.orig;
+            const raw = (input.value || '').trim();
+            if (raw === orig) return;
+            let body;
+            if (raw === '') {
+                body = { raising_seq: null };
+            } else {
+                const n = parseInt(raw, 10);
+                if (isNaN(n) || n < 0) {
+                    showToast('序号须为非负整数', 'error');
+                    input.value = orig;
+                    return;
+                }
+                body = { raising_seq: n };
+            }
+            try {
+                const res = await fetch(`/api/raising/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+                if (res.ok) {
+                    input.dataset.orig = raw;
+                    showToast(raw === '' ? '序号已清空' : ('序号已设为 ' + raw));
+                    await loadRaisingAccounts();
+                } else {
+                    let msg = '序号保存失败';
+                    try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (e) {}
+                    showToast(msg, 'error');
+                    input.value = orig;
+                }
+            } catch (e) {
+                showToast('保存失败: ' + e.message, 'error');
+                input.value = orig;
+            }
+        }
+
+        // 起号设备号占用校验：{ deviceNumber(accountId) }
+        let raisingDeviceMap = {};
+        let raisingEditCurrentId = null;
+
+        async function buildRaisingDeviceMap() {
+            try {
+                const res = await fetch('/api/raising?limit=1000');
+                const list = await res.json();
+                raisingDeviceMap = {};
+                (list || []).forEach(a => {
+                    if (a.device_number) raisingDeviceMap[String(a.device_number).trim()] = a.id;
+                });
+            } catch (e) { raisingDeviceMap = {}; }
+        }
+
+        function checkRaisingDeviceDuplicate() {
+            const dev = (document.getElementById('raisingEditDevice').value || '').trim();
+            const hint = document.getElementById('raisingDeviceHint');
+            if (!dev) { hint.textContent = ''; return false; }
+            const ownerId = raisingDeviceMap[dev];
+            if (ownerId && ownerId !== raisingEditCurrentId) {
+                hint.textContent = '⚠ 该设备号已被其他起号占用，请更换';
+                return true;
+            }
+            hint.textContent = '';
+            return false;
+        }
+
+        async function openRaisingEditModal(id) {
+            // 本弹窗只用于编辑已有起号；新增请用「➕ 新增起号」(promote)
+            raisingEditCurrentId = id;
+            await buildRaisingDeviceMap();
+            document.getElementById('raisingDeviceHint').textContent = '';
+            document.getElementById('raisingEditTitle').textContent = '编辑起号数据';
+            document.getElementById('raisingEditId').value = id;
+            const res = await fetch(`/api/raising/${id}`);
+            if (!res.ok) {
+                showToast('获取起号数据失败', 'error');
+                return;
+            }
+            const acc = await res.json();
+            document.getElementById('raisingEditId').value = acc.id;
+            document.getElementById('raisingEditSeq').value =
+                (acc.raising_seq === null || acc.raising_seq === undefined) ? '' : acc.raising_seq;
+            document.getElementById('raisingEditDevice').value = acc.device_number || '';
+            document.getElementById('raisingEditOwnerName').value = acc.owner_name || '';
+            document.getElementById('raisingEditAccountName').value = acc.account_name || '';
+            document.getElementById('raisingEditBindingDetail').value = acc.binding_detail || '';
+            document.getElementById('raisingEditAccountId').value = acc.account_id || '';
+            document.getElementById('raisingEditTHLevel').value = acc.town_hall_level || 0;
+            document.getElementById('raisingEditTargetTH').value = acc.target_th_level || '';
+            document.getElementById('raisingEditLastLogin').value = acc.last_login_date || '';
+            document.getElementById('raisingEditModalOverlay').classList.add('active');
+        }
+
+        function closeRaisingEditModal() {
+            document.getElementById('raisingEditModalOverlay').classList.remove('active');
+        }
+
+        async function saveRaisingAccount() {
+            const id = document.getElementById('raisingEditId').value;
+            // 编辑弹窗只用于编辑已有起号；新增统一走「从主表选取」(promote)
+            if (!id) {
+                showToast('新增起号请点右上角「➕ 新增起号」从主表选取账号', 'error');
+                return;
+            }
+            const deviceNumber = (document.getElementById('raisingEditDevice').value || '').trim();
+            if (!deviceNumber) {
+                showToast('请填写起号设备', 'error');
+                return;
+            }
+            // 前端预校验：设备号是否被其他起号占用
+            if (checkRaisingDeviceDuplicate()) {
+                showToast('起号设备已被其他账号占用，请更换', 'error');
+                return;
+            }
+            // 目标等级合法性（0-18）
+            const targetRaw = document.getElementById('raisingEditTargetTH').value;
+            if (targetRaw !== '') {
+                const tv = parseInt(targetRaw, 10);
+                if (isNaN(tv) || tv < 0 || tv > 18) {
+                    showToast('目标等级须在 0-18 之间', 'error');
+                    return;
+                }
+            }
+            // 序号（可留空；非负整数）
+            const seqRaw = (document.getElementById('raisingEditSeq').value || '').trim();
+            if (seqRaw !== '') {
+                const sv = parseInt(seqRaw, 10);
+                if (isNaN(sv) || sv < 0) {
+                    showToast('序号须为非负整数', 'error');
+                    return;
+                }
+            }
+            const data = {
+                raising_seq: seqRaw === '' ? null : parseInt(seqRaw, 10),
+                device_number: deviceNumber,
+                owner_name: document.getElementById('raisingEditOwnerName').value,
+                account_name: document.getElementById('raisingEditAccountName').value,
+                binding_detail: document.getElementById('raisingEditBindingDetail').value,
+                account_id: document.getElementById('raisingEditAccountId').value,
+                town_hall_level: parseInt(document.getElementById('raisingEditTHLevel').value) || 0,
+                target_th_level: targetRaw ? parseInt(targetRaw) : null,
+                last_login_date: document.getElementById('raisingEditLastLogin').value || null,
+            };
+
+            const res = await fetch(`/api/raising/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (res.ok) {
+                showToast('起号数据已同步到账号主表');
+                closeRaisingEditModal();
+                await loadRaisingAccounts();
+                await loadAccounts();
+                await loadLogs();
+            } else {
+                let msg = '操作失败';
+                try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (e) {}
+                showToast(msg, 'error');
+            }
+        }
+
+        async function deleteRaisingAccount(id) {
+            if (!await showConfirm('【取消起号】= 放弃这个起号计划。\n\n· 账号会保留在账号主表\n· 大本营等级 / 目标等级都不改动\n· 最后登录时间会更新为今天\n· 主表解锁\n\n确定要取消吗？')) return;
+            const res = await fetch(`/api/raising/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                showToast('已取消起号（账号与等级均保留在主表）');
+                await loadRaisingAccounts();
+                await loadAccounts();
+                await loadLogs();
+            } else {
+                let msg = '操作失败';
+                try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (e) {}
+                showToast(msg, 'error');
+            }
+        }
+
+        async function finishRaisingAccount(id) {
+            if (!await showConfirm('【完成起号】= 这个号已练到目标了。\n\n· 账号会保留在账号主表\n· 大本营等级会更新为「目标等级」\n· 最后登录时间会更新为今天\n· 从起号列表移除（主表解锁）\n\n确定已完成吗？')) return;
+            const res = await fetch(`/api/raising/${id}/finish`, { method: 'POST' });
+            if (res.ok) {
+                showToast('已完成起号（大本营等级已更新为目标等级）');
+                await loadRaisingAccounts();
+                await loadAccounts();
+                await loadLogs();
+            } else {
+                let msg = '操作失败';
+                try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (e) {}
+                showToast(msg, 'error');
+            }
+        }
+
+        // ==================== 起号：从主表选取账号 ====================
+        let pickerSelectedId = null;
+
+        function openRaisingPicker() {
+            pickerSelectedId = null;
+            document.getElementById('pickerDeviceNumber').value = '';
+            document.getElementById('pickerTargetTH').value = '';
+            document.getElementById('pickerDeviceHint').textContent = '';
+            document.getElementById('pickerSelectedInfo').textContent = '尚未选择账号';
+            document.getElementById('raisingAddModalOverlay').classList.add('active');
+            buildRaisingDeviceMap();   // 构建设备号占用映射，供实时提示用
+            loadPickerAccounts();
+        }
+
+        function checkPickerDeviceDuplicate() {
+            const dev = (document.getElementById('pickerDeviceNumber').value || '').trim();
+            const hint = document.getElementById('pickerDeviceHint');
+            if (!dev) { hint.textContent = ''; return false; }
+            if (raisingDeviceMap[dev]) {
+                hint.textContent = '⚠ 该设备号已被其他起号占用，请更换';
+                return true;
+            }
+            hint.textContent = '';
+            return false;
+        }
+
+        function closeRaisingPicker() {
+            document.getElementById('raisingAddModalOverlay').classList.remove('active');
+        }
+
+        async function loadPickerAccounts() {
+            const res = await fetch('/api/accounts?limit=1000');
+            const accounts = await res.json();
+            const search = (document.getElementById('pickerSearchInput').value || '').toLowerCase();
+            // 只显示尚未设为起号的账号（device_number 为空）
+            const available = accounts.filter(a =>
+                !a.device_number &&
+                (!search ||
+                 (a.account_name || '').toLowerCase().includes(search) ||
+                 (a.account_id || '').toLowerCase().includes(search) ||
+                 (a.binding_detail || '').toLowerCase().includes(search) ||
+                 (a.owner_name || '').toLowerCase().includes(search))
+            );
+            const tbody = document.getElementById('pickerTableBody');
+            if (available.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-row">没有可设为起号的账号（或全部已是起号）</td></tr>';
+                return;
+            }
+            tbody.innerHTML = available.map(a => `
+                <tr data-id="${a.id}" data-name="${(a.account_name || '').replace(/"/g, '&quot;')}" onclick="selectPickerAccount(${a.id})" style="cursor:pointer;">
+                    <td>${a.owner_name || '-'}</td>
+                    <td style="font-weight:600;">${a.account_name || '-'}</td>
+                    <td style="color:var(--text-secondary);">${a.binding_detail || '-'}</td>
+                    <td style="font-family:monospace;font-size:12px;">${a.account_id || '-'}</td>
+                    <td>${a.town_hall_level || 0}</td>
+                    <td><button class="action-btn" onclick="event.stopPropagation(); selectPickerAccount(${a.id})">选为起号</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function selectPickerAccount(id) {
+            pickerSelectedId = id;
+            let name = '';
+            document.querySelectorAll('#pickerTableBody tr').forEach(tr => {
+                const on = (tr.getAttribute('data-id') == id);
+                tr.style.background = on ? 'var(--bg-hover)' : '';
+                tr.style.boxShadow = on ? 'inset 3px 0 0 var(--accent)' : '';
+                if (on && tr.getAttribute('data-name')) name = tr.getAttribute('data-name');
+            });
+            document.getElementById('pickerSelectedInfo').textContent =
+                name ? `已选择账号：${name}（下一步填上方「起号设备」）` : ('已选择账号 #' + id);
+            // 自动聚焦设备号输入框，省一次点击
+            const dev = document.getElementById('pickerDeviceNumber');
+            if (dev && !dev.value) dev.focus();
+        }
+
+        async function confirmPromoteRaising() {
+            if (!pickerSelectedId) {
+                showToast('请先选择要设为起号的账号', 'error');
+                return;
+            }
+            const deviceNumber = (document.getElementById('pickerDeviceNumber').value || '').trim();
+            if (!deviceNumber) {
+                showToast('请先在上方填写「起号设备」', 'error');
+                const dev = document.getElementById('pickerDeviceNumber');
+                dev.focus();
+                try { dev.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+                return;
+            }
+            // 设备号占用预校验（复用起号设备映射）
+            await buildRaisingDeviceMap();
+            if (raisingDeviceMap[deviceNumber]) {
+                showToast(`起号设备「${deviceNumber}」已被占用，请更换`, 'error');
+                return;
+            }
+            // 目标等级合法性（0-18）
+            const targetRaw = document.getElementById('pickerTargetTH').value;
+            if (targetRaw !== '') {
+                const tv = parseInt(targetRaw, 10);
+                if (isNaN(tv) || tv < 0 || tv > 18) {
+                    showToast('目标等级须在 0-18 之间', 'error');
+                    return;
+                }
+            }
+            const data = {
+                id: pickerSelectedId,
+                device_number: deviceNumber,
+                target_th_level: targetRaw ? parseInt(targetRaw) : null,
+            };
+            const res = await fetch('/api/raising/promote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            if (res.ok) {
+                showToast('已将账号设为起号（最后登录时间已清零）');
+                closeRaisingPicker();
+                await loadRaisingAccounts();
+                await loadAccounts();
+                await loadLogs();
+            } else {
+                let msg = '操作失败';
+                try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (e) {}
+                showToast(msg, 'error');
+            }
+        }
+
+        // ==================== 账号出租子界面 ====================
+
+        let allAccountsForRental = [];
+        let editingRentalId = null;
+
+        async function loadAccountsForRentalSelect() {
+            const res = await fetch('/api/accounts?limit=1000');
+            allAccountsForRental = (await res.json()).filter(a => !a.device_number || a.device_number === '');
+        }
+
+        function openRentalModal() {
+            document.getElementById('rentalModalOverlay').classList.add('active');
+            loadRentals();
+        }
+
+        function closeRentalModal() {
+            document.getElementById('rentalModalOverlay').classList.remove('active');
+        }
+
+        function getRentalStatus(rental) {
+            if (!rental.start_date || !rental.end_date) return { label: '未设置', class: 'badge' };
+            const today = new Date().toISOString().slice(0, 10);
+            if (rental.start_date > today) return { label: '未开始', class: 'badge' };
+            if (rental.end_date < today) return { label: '已到期', class: 'badge' };
+            return { label: '出租中', class: 'badge badge-self' };
+        }
+
+        async function loadRentals() {
+            const params = new URLSearchParams();
+            const search = document.getElementById('rentalSearchInput').value;
+            const status = document.getElementById('rentalFilterStatus').value;
+            if (search) params.append('search', search);
+            if (status) params.append('status', status);
+
+            const res = await fetch('/api/rentals?' + params.toString());
+            const rentals = await res.json();
+
+            const tbody = document.getElementById('rentalTableBody');
+            if (rentals.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-row">暂无出租记录，点击右上角"新增出租"添加</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = rentals.map(r => {
+                const status = getRentalStatus(r);
+                return `
+                    <tr>
+                        <td>${r.owner_name || '-'}</td>
+                        <td style="font-weight:600;">${r.account_name || '-'}</td>
+                        <td style="color:var(--text-secondary);">${r.binding_detail || '-'}</td>
+                        <td style="font-family:monospace;font-size:12px;">${r.account_id_text || '-'}</td>
+                        <td style="color:var(--text-muted);font-size:12px;">${r.start_date || '-'}</td>
+                        <td>${r.duration_days ? r.duration_days + ' 天' : '-'}</td>
+                        <td style="color:var(--text-muted);font-size:12px;">${r.end_date || '-'}</td>
+                        <td><span class="${status.class}">${status.label}</span></td>
+                        <td>
+                            <button class="action-btn" onclick="openRentalEditModal(${r.id})">编辑</button>
+                            <button class="action-btn delete" onclick="deleteRental(${r.id})">删除</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateRentalAccountSelect() {
+            const select = document.getElementById('rentalAccountSelect');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">手动填写</option>' +
+                allAccountsForRental.map(acc =>
+                    `<option value="${acc.id}" data-owner="${acc.owner_name || ''}" data-name="${acc.account_name || ''}" data-binding="${acc.binding_detail || ''}" data-account="${acc.account_id || ''}">${acc.account_name || acc.account_id || '未知'} (${acc.platform})</option>`
+                ).join('');
+            select.value = currentVal;
+        }
+
+        function fillRentalFromAccount() {
+            const select = document.getElementById('rentalAccountSelect');
+            const option = select.options[select.selectedIndex];
+            if (!select.value || !option) {
+                return;
+            }
+            document.getElementById('rentalEditOwnerName').value = option.dataset.owner || '';
+            document.getElementById('rentalEditAccountName').value = option.dataset.name || '';
+            document.getElementById('rentalEditBindingDetail').value = option.dataset.binding || '';
+            document.getElementById('rentalEditAccountIdText').value = option.dataset.account || '';
+        }
+
+        async function openRentalEditModal(id = null) {
+            editingRentalId = id;
+            document.getElementById('rentalEditTitle').textContent = id ? '编辑出租记录' : '新增出租记录';
+            document.getElementById('rentalEditId').value = id || '';
+            document.getElementById('rentalAccountSelect').value = '';
+
+            if (!allAccountsForRental.length) {
+                await loadAccountsForRentalSelect();
+            }
+            updateRentalAccountSelect();
+
+            if (id) {
+                const res = await fetch(`/api/rentals/${id}`);
+                if (!res.ok) {
+                    showToast('获取出租记录失败', 'error');
+                    return;
+                }
+                const r = await res.json();
+                document.getElementById('rentalEditOwnerName').value = r.owner_name || '';
+                document.getElementById('rentalEditAccountName').value = r.account_name || '';
+                document.getElementById('rentalEditBindingDetail').value = r.binding_detail || '';
+                document.getElementById('rentalEditAccountIdText').value = r.account_id_text || '';
+                document.getElementById('rentalEditStartDate').value = r.start_date || '';
+                document.getElementById('rentalEditDuration').value = r.duration_days || '';
+                document.getElementById('rentalEditEndDate').value = r.end_date || '';
+                if (r.account_id) {
+                    document.getElementById('rentalAccountSelect').value = r.account_id;
+                }
+            } else {
+                document.getElementById('rentalEditOwnerName').value = '';
+                document.getElementById('rentalEditAccountName').value = '';
+                document.getElementById('rentalEditBindingDetail').value = '';
+                document.getElementById('rentalEditAccountIdText').value = '';
+                document.getElementById('rentalEditStartDate').value = '';
+                document.getElementById('rentalEditDuration').value = '';
+                document.getElementById('rentalEditEndDate').value = '';
+            }
+
+            document.getElementById('rentalEditModalOverlay').classList.add('active');
+        }
+
+        function closeRentalEditModal() {
+            document.getElementById('rentalEditModalOverlay').classList.remove('active');
+            editingRentalId = null;
+        }
+
+        function calculateRentalEndDate() {
+            const start = document.getElementById('rentalEditStartDate').value;
+            const duration = parseInt(document.getElementById('rentalEditDuration').value);
+            if (start && duration > 0) {
+                const d = new Date(start);
+                d.setDate(d.getDate() + duration);
+                document.getElementById('rentalEditEndDate').value = d.toISOString().slice(0, 10);
+            }
+        }
+
+        async function saveRental() {
+            const data = {
+                owner_name: document.getElementById('rentalEditOwnerName').value,
+                account_name: document.getElementById('rentalEditAccountName').value,
+                binding_detail: document.getElementById('rentalEditBindingDetail').value,
+                account_id_text: document.getElementById('rentalEditAccountIdText').value,
+                start_date: document.getElementById('rentalEditStartDate').value || null,
+                duration_days: document.getElementById('rentalEditDuration').value ? parseInt(document.getElementById('rentalEditDuration').value) : null,
+                end_date: document.getElementById('rentalEditEndDate').value || null,
+            };
+
+            if (!data.account_name && !data.account_id_text) {
+                showToast('账号名称和账号至少填写一个', 'error');
+                return;
+            }
+
+            const url = editingRentalId ? `/api/rentals/${editingRentalId}` : '/api/rentals';
+            const method = editingRentalId ? 'PUT' : 'POST';
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (res.ok) {
+                showToast(editingRentalId ? '出租记录修改成功' : '出租记录新增成功');
+                closeRentalEditModal();
+                await loadRentals();
+                await loadStatistics();
+                await loadLogs();
+            } else {
+                showToast('操作失败', 'error');
+            }
+        }
+
+        async function deleteRental(id) {
+            if (!await showConfirm('确定要删除这条出租记录吗？')) return;
+            const res = await fetch(`/api/rentals/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                showToast('删除出租记录成功');
+                await loadRentals();
+                await loadStatistics();
+                await loadLogs();
+            } else {
+                showToast('删除失败', 'error');
+            }
+        }
+
+        // 起租日或租售时长变化时自动计算结束日
+        document.getElementById('rentalEditStartDate').addEventListener('change', calculateRentalEndDate);
+        document.getElementById('rentalEditDuration').addEventListener('input', calculateRentalEndDate);
+
+        // 弹窗不再支持点击遮罩关闭，只能通过"关闭/取消"按钮关闭
+
+        // ESC 关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeRaisingEditModal();
+                closeRentalEditModal();
+            }
+        });
+
+        // Web 版（非本机桌面版 127.0.0.1:5000）才显示「退出登录」
+        (function () {
+            const isDesktop = (location.hostname === '127.0.0.1' || location.hostname === 'localhost')
+                              && location.port === '5000';
+            if (!isDesktop) {
+                const b = document.getElementById('logoutBtn');
+                if (b) b.style.display = '';
+            }
+        })();
+
+        // 启动
+        init();
+    </script>
+</body>
+</html>
