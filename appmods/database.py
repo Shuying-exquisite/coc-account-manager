@@ -507,7 +507,7 @@ def update_raising_account(account_id, data):
     优化点（2026-11-16）：
     - 起号设备号必须唯一：若把设备号改成他人已占用的值，拒绝更新（返回 False），
       避免出现两个起号共用一个设备号导致管理混乱。
-    - 校验目标等级合法性（0-18），非法值拒绝。
+    - 校验目标等级合法性（非负整数），不设上限，非法值拒绝。
     """
     conn = get_db()
 
@@ -533,11 +533,11 @@ def update_raising_account(account_id, data):
         data = dict(data)
         data["device_number"] = dev
 
-    # 目标等级合法性校验（0-18）
+    # 目标等级合法性校验（非负整数，不设上限）
     if "target_th_level" in data and data["target_th_level"] not in (None, ""):
         try:
             tv = int(data["target_th_level"])
-            if tv < 0 or tv > 18:
+            if tv < 0:
                 conn.close()
                 return False
             data = dict(data)

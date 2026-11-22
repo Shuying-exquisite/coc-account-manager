@@ -525,8 +525,8 @@ def main():
         if target not in (None, ''):
             try:
                 _tv = int(target)
-                if _tv < 0 or _tv > 18:
-                    return jsonify({'error': '目标等级须在 0-18 之间'}), 400
+                if _tv < 0:
+                    return jsonify({'error': '目标等级须为非负整数'}), 400
             except (ValueError, TypeError):
                 return jsonify({'error': '目标等级须为数字'}), 400
         # 起号序号：可编辑但不可与其他起号重复
@@ -714,13 +714,13 @@ def main():
             return jsonify({'error': '请选择账号并填写起号设备'}), 400
         if _device_number_taken(device_number):
             return jsonify({'error': f'起号设备 {device_number} 已存在，不可重复'}), 400
-        # 目标等级合法性校验（0-18，留空表示不设）
+        # 目标等级合法性校验（非负整数，不设上限，留空表示不设）
         target_val = data.get('target_th_level')
         if target_val not in (None, ''):
             try:
                 _tv = int(target_val)
-                if _tv < 0 or _tv > 18:
-                    return jsonify({'error': '目标等级须在 0-18 之间'}), 400
+                if _tv < 0:
+                    return jsonify({'error': '目标等级须为非负整数'}), 400
                 target_val = _tv
             except (ValueError, TypeError):
                 return jsonify({'error': '目标等级须为数字'}), 400
